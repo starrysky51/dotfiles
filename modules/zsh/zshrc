@@ -11,6 +11,9 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 
 # Customize to your needs...
+eval "$(anyenv init -)"
+eval "$(direnv hook zsh)"
 
-# alises
 alias ll='ls -laF'
+
+export PATH=$HOME/.nodebrew/current/bin:$PATH
