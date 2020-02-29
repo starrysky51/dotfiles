@@ -11,9 +11,49 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 
 # Customize to your needs...
+
+export PATH="$PATH:$HOME/.anyenv/bin"
+export PATH="$PATH:$HOME/.local/bin"
+export MANPATH="/usr/local/share/man:/usr/local/man:/usr/share/man"
+export TERM="xterm-256color"
+
+
 eval "$(anyenv init -)"
 eval "$(direnv hook zsh)"
+eval "$(starship init zsh)"
 
-alias ll='ls -laF'
+alias ll='exa -ahl --git'
+alias nv='nvim'
+alias nvi='nvim'
 
-export PATH=$HOME/.nodebrew/current/bin:$PATH
+function peco-src () {
+    local repo=$(ghq list | peco --query "$LBUFFER")
+    if [ -n "$repo" ]; then
+        repo=$(ghq list --full-path --exact $repo)
+        BUFFER="cd ${repo}"
+        zle accept-line
+    fi
+    zle clear-screen
+}
+zle -N peco-src
+bindkey '^]' peco-src
+
+function peco-select-history {
+    BUFFER=`history -n -r 1 | peco --query "$LBUFFER"`
+    CURSOR=$#BUFFER
+    zle reset-prompt
+}
+zle -N peco-select-history
+bindkey '^r' peco-select-history
+
+function fd-fzf() {
+  local target_dir=$(fd -t d -I -H -E ".git"| fzf-tmux --reverse --query="$LBUFFER")
+  local current_dir=$(pwd)
+  if [ -n "$target_dir" ]; then
+    BUFFER="cd ${current_dir}/${target_dir}"
+    zle accept-line
+  fi
+  zle reset-prompt
+}
+zle -N fd-fzf
+bindkey "^n" fd-fzf
