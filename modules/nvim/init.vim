@@ -11,12 +11,14 @@ Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'lighttiger2505/deoplete-vim-lsp'
 Plug 'mattn/vim-lsp-icons'
 Plug 'ryanolsonx/vim-lsp-typescript'
+Plug 'ryanolsonx/vim-lsp-python'
 
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
 Plug 'Shougo/denite.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'chemzqm/denite-git'
+Plug 'Shougo/neomru.vim'
 Plug 'Shougo/deoplete-terminal'
 Plug 'zchee/deoplete-zsh'
 Plug 'Shougo/deol.nvim'
@@ -28,18 +30,24 @@ Plug 'junegunn/fzf.vim'
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 
+Plug 'lambdalisue/fern.vim'
+
 Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
 
 Plug 'scrooloose/syntastic'
 Plug 'cocopon/iceberg.vim'
 Plug 'Rigellute/rigel'
+Plug 'tomasr/molokai'
+Plug 'pgavlin/pulumi.vim'
 
 Plug 'terryma/vim-multiple-cursors'
+Plug 'vim-scripts/ruby-matchit'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'vim-jp/vimdoc-ja'
 Plug 'mattn/vim-sl'
 Plug 'tpope/vim-rails'
+Plug 'tpope/vim-endwise'
 Plug 'derekwyatt/vim-scala'
 Plug 'pangloss/vim-javascript'
 Plug 'mxw/vim-jsx'
@@ -50,10 +58,10 @@ Plug 'luochen1990/rainbow'
 Plug 'mechatroner/rainbow_csv'
 Plug 'hashivim/vim-terraform'
 Plug 'slim-template/vim-slim'
-Plug 'ConradIrwin/vim-bracketed-paste' " set paste
+Plug 'Shougo/junkfile.vim'
+Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
 
 " check: chrome拡張がインストールできない
-" Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
 " Plug 'prabirshrestha/asyncomplete.vim'
 " Plug 'prabirshrestha/asyncomplete-lsp.vim'
 " check: defxの表示がくずれる
@@ -74,8 +82,10 @@ scriptencoding=utf-8
 
 syntax enable
 
-" colorscheme iceberg
-colorscheme rigel
+"colorscheme iceberg
+"colorscheme rigel
+colorscheme molokai
+"colorscheme pulumi
 
 set encoding=utf-8
 set fileencoding=utf-8
@@ -129,8 +139,10 @@ let g:rainbow_active=1
 let g:deoplete#enable_at_startup=1
 let g:terraform_fmt_on_save=1
 let g:netrw_liststyle=3
-let g:fzf_layout= { 'down': '~40%' }
-let g:deol#shell_history_path= '~/.zsh_history'
+let g:fzf_layout={
+      \ 'down': '~40%'
+      \ }
+let g:deol#shell_history_path='~/.zsh_history'
 let g:gitgutter_highlight_lines=0
 let g:javascript_plugin_flow=1
 
@@ -153,11 +165,6 @@ endfunction
 
 cnoremap <Left> <Space><BS><Left>
 cnoremap <Right> <Space><BS><Right>
-" https://dev.classmethod.jp/tool/trouble-shoot-ctrlv-in-vim/
-map ^[OA ^[ka
-map ^[OB ^[ja
-map ^[OC ^[la
-map ^[OD ^[ha
 nnoremap <C-l>d :LspDefinition<CR>
 nnoremap <C-l>s :LspStatus<CR>
 nnoremap <C-l>h :LspHover<CR>
@@ -168,9 +175,9 @@ nnoremap <silent><Esc><Esc> :nohlsearch<CR>
 nnoremap <Leader>sl :call sl#animate()<CR>
 nnoremap <Leader>w :w<CR>
 nnoremap <Leader>q :q!<CR>
-nnoremap <Leader>f :Denite file/rec<CR>
+nnoremap <Leader>f :Denite file/rec file_mru buffer<CR>
 nnoremap <Leader>l :Denite line<CR>
-nnoremap <Leader>e :Denite file/rec line<CR>
+nnoremap <Leader>e :Denite file/rec buffer<CR>
 nnoremap <Leader>h :Denite defx/history<CR>
 nnoremap <Leader>g :Denite grep<CR>
 nnoremap <Leader>b :Denite buffer<CR>
@@ -178,6 +185,7 @@ nnoremap <Leader>m :Denite menu<CR>
 nnoremap <Leader>o :Denite outline<CR>
 nnoremap <Leader>u :Denite source<CR>
 nnoremap <Leader>c :Denite gitstatus<CR>
+nnoremap <Leader>r :Denite register<CR>
 " https://wonderwall.hatenablog.com/entry/2017/10/07/220000
 nnoremap <silent>,f :Files<CR>
 nnoremap <silent>,g :GFiles<CR>
@@ -192,27 +200,19 @@ nnoremap <silent>,n :NERDTreeToggle<CR>
 " https://medium.com/@bookun/vim-advent-calendar-2019-12-20-63a12396211f
 nnoremap <silent>df :Deol -split=floating<CR>
 nnoremap <silent>dv :Deol -split=vertical<CR>
-nnoremap <silent>ds :Deol -split=horizontal<CR>
+nnoremap <silent>dx :Deol -split=horizontal<CR>
 nnoremap <silent>bg (deol_bg)
 
-let s:denite_win_width_percent = 0.6
-let s:denite_win_height_percent = 0.5
-let s:denite_default_options = {
-    \ 'split': 'horizontal',
-    \ 'winwidth': float2nr(&columns * s:denite_win_width_percent),
-    \ 'wincol': float2nr((&columns - (&columns * s:denite_win_width_percent)) / 2),
-    \ 'winheight': float2nr(&lines * s:denite_win_height_percent),
-    \ 'winrow': float2nr((&lines - (&lines * s:denite_win_height_percent)) / 2),
-    \ 'highlight_filter_background': 'DeniteFilter',
-    \ 'prompt': '$ ',
-    \ 'start_filter': v:true
-    \ }
-call denite#custom#option('default', s:denite_default_options)
+" =======================================================
+" Dark powerd Settings
+" =======================================================
 
-call denite#custom#var('file/rec', 'command', ['ag', '--follow', '--nocolor', '--nogroup', '-g', ''])
-call denite#custom#source('file_mru', 'matchers', ['matcher/fuzzy', 'matcher/project_files'])
+call denite#custom#source('file_mru', 'matchers', ['matcher/fuzzy'])
 call denite#custom#source('file/rec', 'sorters', ['sorter/sublime'])
 call denite#custom#kind('file', 'default_action', 'open')
+call denite#custom#var('file/rec', 'command', ['ag', '--hidden', '--ignore-dir', '.git', '--follow', '--nocolor', '-g', ''])
+call denite#custom#var('file/rec/git', 'command', ['git', 'ls-files', '-co', '--exclude-standard'])
+call denite#custom#var('file/rec/py', 'command', ['scantree.py', '--path', ':directory'])
 call denite#custom#var('grep', 'command', ['ag'])
 call denite#custom#var('grep', 'default_opts', ['-i', '--vimgrep'])
 call denite#custom#var('grep', 'recursive_opts', [])
@@ -220,34 +220,43 @@ call denite#custom#var('grep', 'pattern_opt', [])
 call denite#custom#var('grep', 'separator', ['--'])
 call denite#custom#var('grep', 'final_opts', [])
 call denite#custom#alias('source', 'file/rec/git', 'file/rec')
-call denite#custom#var('file/rec/git', 'command', ['git', 'ls-files', '-co', '--exclude-standard'])
 call denite#custom#alias('source', 'file/rec/py', 'file/rec')
-call denite#custom#var('file/rec/py', 'command', ['scantree.py', '--path', ':directory'])
 call denite#custom#filter('matcher/ignore_globs', 'ignore_globs',
-      \ [ '.git/', '.ropeproject/', '__pycache__/',
-      \   'venv/', 'images/', '*.min.*', 'img/', 'fonts/'])
-call denite#custom#action('file', 'test',
-      \ {context -> execute('let g:foo = 1')})
-call denite#custom#action('file', 'test2',
-      \ {context -> denite#do_action(
-      \  CONTEXT, 'OPEN', CONTEXT['TARGETS'])})
-
+      \ [ '.git/', '.ropeproject/', '__pycache__/', 'venv/', 'images/', '*.min.*', 'img/', 'fonts/'])
+call denite#custom#action('file', 'test', {
+      \ context -> execute('let g:foo = 1')
+      \ })
+call denite#custom#action('file', 'test2', {
+      \ context -> denite#do_action(
+      \  CONTEXT, 'OPEN', CONTEXT['TARGETS']
+      \ )})
+call denite#custom#option('_', 'statusline', v:false)
+call denite#custom#option('default', {
+      \ 'split': 'horizontal',
+      \ 'highlight_filter_background': 'DeniteFilter',
+      \ 'prompt': '> ',
+      \ 'start_filter': v:true
+      \})
 let s:menus = {}
-let s:menus.zsh = {
-      \ 'description': 'Edit your import zsh configuration'
-      \ }
-let s:menus.zsh.file_candidates = [
-      \ ['zshrc', '~/.config/zsh/.zshrc'],
-      \ ['zshenv', '~/.zshenv'],
+let s:menus.rails = {
+      \ 'description': 'Commands in Rails project',
+      \ 'command_candidates': [
+        \ ['install gems', '!bundle install'],
+        \ ['execute tests', '!bundle exec rails test'],
+        \ ['rubocop', '!bundle exec rubocop'],
+        \ ['rubocop auto-correct', '!bundle exec rubocop --auto-correct'],
+        \ ['slim-lint', '!bundle exec slim-lint app/**/*.slim'],
       \ ]
-let s:menus.my_commands = {
-      \ 'description': 'Example commands'
       \ }
-let s:menus.my_commands.command_candidates = [
-      \ ['Split the window', 'vnew'],
-      \ ['Open zsh menu', 'Denite menu:zsh'],
-      \ ['Format code', 'FormatCode', 'go,python'],
+let s:menus.dotfiles = {
+      \ 'description': 'Edit dotfiles',
+      \ 'file_candidates': [
+        \ ['neovim', '~/.config/nvim/init.vim'],
+        \ ['vim', '~/.vimrc'],
+        \ ['tmux', '~/.tmux.conf'],
+        \ ['zshrc', '~/.zsh/.zshrc'],
       \ ]
+      \ }
 call denite#custom#var('menu', 'menus', s:menus)
 
 call defx#custom#column('mark', {
@@ -255,13 +264,14 @@ call defx#custom#column('mark', {
     \ 'selected_icon': '✓',
     \ })
 call defx#custom#option('_', {
-      \ 'columns': 'mark:indent:icon:filename:type:size:time',
       \ 'show_ignored_files': v:true,
       \ })
+
+call deoplete#custom#option('smart_case', v:true)
 call deoplete#custom#var('terminal', 'require_same_tab', v:false)
 
 " =======================================================
-" auto commands
+" Auto Commands
 " =======================================================
 
 augroup auto_comment_off
@@ -269,9 +279,15 @@ augroup auto_comment_off
   autocmd BufEnter * setlocal formatoptions-=ro
 augroup END
 
+augroup MakefileTab
+  autocmd!
+  autocmd FileType make set noexpandtab nosmarttab
+augroup END
+
 autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | Defx | endif
 autocmd BufRead,BufNewFile *.slim set filetype=slim
-autocmd BufRead,BufNewFile *.tsx,*jsx set filetype=typescript,tsx
+autocmd BufRead,BufNewFile *.tsx set filetype=tsx
+autocmd BufRead,BufNewFile *.jsx set filetype=jsx
 autocmd BufRead,BufNewFile *.sbt set filetype=scala
 
 autocmd FileType denite call s:denite_my_settings()
@@ -281,7 +297,7 @@ function! s:denite_my_settings() abort
   nnoremap <silent><buffer><expr> p denite#do_map('do_action', 'preview')
   nnoremap <silent><buffer><expr> q denite#do_map('quit')
   nnoremap <silent><buffer><expr> i denite#do_map('open_filter_buffer')
-  nnoremap <silent><buffer><expr> <Space> denite#do_map('toggle_select').'j'
+  nnoremap <silent><buffer><expr><Space> denite#do_map('toggle_select').'j'
 endfunction
 
 autocmd FileType denite-filter call s:denite_filter_my_settings()
@@ -369,83 +385,104 @@ if executable('typescript-language-server')
 endif
 
 if executable('intelephense')
-  au User lsp_setup call lsp#register_server({
-        \ 'name': 'intelephense',
-        \ 'cmd': {server_info->['node', expand('~/.anyenv/envs/nodenv/versions/13.2.0/lib/node_modules/intelephense/lib/intelephense.js'), '--stdio']},
-        \ 'initialization_options': {"storagePath": "/tmp/intelephense"},
-        \ 'whitelist': ['php'],
-        \ 'workspace_config': { 'intelephense': {
-        \   'files.associations': ['*.php'],
-        \ }},
-        \ })
+  augroup LspPhp
+    autocmd!
+    au User lsp_setup call lsp#register_server({
+          \ 'name': 'intelephense',
+          \ 'cmd': {server_info->['node', expand('~/.anyenv/envs/nodenv/versions/13.2.0/lib/node_modules/intelephense/lib/intelephense.js'), '--stdio']},
+          \ 'initialization_options': {"storagePath": "/tmp/intelephense"},
+          \ 'whitelist': ['php'],
+          \ 'workspace_config': { 'intelephense': {
+          \   'files.associations': ['*.php'],
+          \ }},
+          \ })
+  augroup END
 endif
 
 if executable('css-languageserver')
-  au User lsp_setup call lsp#register_server({
-        \ 'name': 'css-languageserver',
-        \ 'cmd': {server_info->[&shell, &shellcmdflag, 'css-languageserver --stdio']},
-        \ 'whitelist': ['css', 'less', 'sass'],
-        \ })
+  augroup LspCss
+    autocmd!
+    au User lsp_setup call lsp#register_server({
+          \ 'name': 'css-languageserver',
+          \ 'cmd': {server_info->[&shell, &shellcmdflag, 'css-languageserver --stdio']},
+          \ 'whitelist': ['css', 'less', 'sass'],
+          \ })
+  augroup END
 endif
 
 if executable('java') && filereadable(expand('$HOME/.lsp/groovy-language-server/build/libs/groovy-language-server.jar'))
-  autocmd User lsp_setup call lsp#register_server({
-        \'name': 'groovy-language-server',
-        \'cmd': {server_info->[
-        \  'java',
-        \  '-jar',
-        \  expand('$HOME/.lsp/groovy-language-server/build/libs/groovy-language-server.jar')
-        \]},
-        \'whitelist': ['groovy']
-        \})
+  augroup LspGroovy
+    autocmd!
+    autocmd User lsp_setup call lsp#register_server({
+          \'name': 'groovy-language-server',
+          \'cmd': {server_info->[
+          \  'java',
+          \  '-jar',
+          \  expand('$HOME/.lsp/groovy-language-server/build/libs/groovy-language-server.jar')
+          \]},
+          \'whitelist': ['groovy']
+          \})
+  augroup END
 endif
 
 if executable('java') && filereadable(expand('~/.lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.600.v20191014-2022.jar'))
-  au User lsp_setup call lsp#register_server({
-        \ 'name': 'eclipse.jdt.ls',
-        \ 'cmd': {server_info->[
-        \     'java',
-        \     '-Declipse.application=org.eclipse.jdt.ls.core.id1',
-        \     '-Dosgi.bundles.defaultStartLevel=4',
-        \     '-Declipse.product=org.eclipse.jdt.ls.core.product',
-        \     '-Dlog.level=ALL',
-        \     '-noverify',
-        \     '-Dfile.encoding=UTF-8',
-        \     '-Xmx1G',
-        \     '-jar',
-        \     expand('~/.lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.600.v20191014-2022.jar'),
-        \     '-configuration',
-        \     expand('~/.lsp/eclipse.jdt.ls/config_mac'),
-        \     '-data',
-        \     getcwd()
-        \ ]},
-        \ 'whitelist': ['java'],
-        \ })
+  augroup LspJava
+    autocmd!
+    au User lsp_setup call lsp#register_server({
+          \ 'name': 'eclipse.jdt.ls',
+          \ 'cmd': {server_info->[
+          \     'java',
+          \     '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+          \     '-Dosgi.bundles.defaultStartLevel=4',
+          \     '-Declipse.product=org.eclipse.jdt.ls.core.product',
+          \     '-Dlog.level=ALL',
+          \     '-noverify',
+          \     '-Dfile.encoding=UTF-8',
+          \     '-Xmx1G',
+          \     '-jar',
+          \     expand('~/.lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.600.v20191014-2022.jar'),
+          \     '-configuration',
+          \     expand('~/.lsp/eclipse.jdt.ls/config_mac'),
+          \     '-data',
+          \     getcwd()
+          \ ]},
+          \ 'whitelist': ['java'],
+          \ })
+  augroup END
 endif
 
 if executable('metals-vim')
-  au User lsp_setup call lsp#register_server({
-        \ 'name': 'metals',
-        \ 'cmd': {server_info->['metals-vim']},
-        \ 'initialization_options': { 'rootPatterns': 'build.sbt' },
-        \ 'whitelist': [ 'scala', 'sbt' ],
-        \ })
+  augroup LspScala
+    autocmd!
+    au User lsp_setup call lsp#register_server({
+          \ 'name': 'metals',
+          \ 'cmd': {server_info->['metals-vim']},
+          \ 'initialization_options': { 'rootPatterns': 'build.sbt' },
+          \ 'whitelist': [ 'scala', 'sbt' ],
+          \ })
+  augroup END
 endif
 
 if executable('docker-langserver')
-  au User lsp_setup call lsp#register_server({
-        \ 'name': 'docker-langserver',
-        \ 'cmd': {server_info->[&shell, &shellcmdflag, 'docker-langserver --stdio']},
-        \ 'whitelist': ['dockerfile'],
-        \ })
+  augroup LspDocker
+    autocmd!
+    au User lsp_setup call lsp#register_server({
+          \ 'name': 'docker-langserver',
+          \ 'cmd': {server_info->[&shell, &shellcmdflag, 'docker-langserver --stdio']},
+          \ 'whitelist': ['dockerfile'],
+          \ })
+  augroup END
 endif
 
 if executable('html-languageserver')
-  au User lsp_setup call lsp#register_server({
-        \ 'name': 'html-languageserver',
-        \ 'cmd': {server_info->[&shell, &shellcmdflag, 'html-languageserver --stdio']},
-        \ 'whitelist': ['html'],
-        \ })
+  augroup LspHtml
+    autocmd!
+    au User lsp_setup call lsp#register_server({
+          \ 'name': 'html-languageserver',
+          \ 'cmd': {server_info->[&shell, &shellcmdflag, 'html-languageserver --stdio']},
+          \ 'whitelist': ['html'],
+          \ })
+  augroup END
 endif
 
 if executable('yaml-language-server')
@@ -468,3 +505,82 @@ if executable('yaml-language-server')
           \})
   augroup END
 endif
+
+if executable('go-langserver')
+  au User lsp_setup call lsp#register_server({
+        \ 'name': 'go-langserver',
+        \ 'cmd': {server_info->['go-langserver', '-gocodecompletion']},
+        \ 'whitelist': ['go'],
+        \ })
+  autocmd BufWritePre *.go LspDocumentFormatSync
+end
+
+if executable('pyls')
+  augroup LspPython
+    autocmd!
+    au User lsp_setup call lsp#register_server({
+          \ 'name': 'pyls',
+          \ 'cmd': {server_info->['pyls']},
+          \ 'whitelist': ['python'],
+          \ })
+  augroup END
+endif
+
+if executable('rls')
+  augroup LspRust
+    autocmd!
+  au User lsp_setup call lsp#register_server({
+        \ 'name': 'rls',
+        \ 'cmd': {server_info->['rustup', 'run', 'stable', 'rls']},
+        \ 'workspace_config': {'rust': {'clippy_preference': 'on'}},
+        \ 'whitelist': ['rust'],
+        \ })
+  augroup END
+end
+
+if executable('flow')
+  augroup LspJavascript
+    autocmd!
+    au User lsp_setup call lsp#register_server({
+          \ 'name': 'flow',
+          \ 'cmd': {server_info->['flow', 'lsp', '--from', 'vim-lsp']},
+          \ 'root_uri':{server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), '.flowconfig'))},
+          \ 'whitelist': ['javascript', 'javascript.jsx'],
+          \ })
+  augroup END
+endif
+
+if executable('bash-language-server')
+  augroup LspBash
+    autocmd!
+    au User lsp_setup call lsp#register_server({
+          \ 'name': 'bash-language-server',
+          \ 'cmd': {server_info->[&shell, &shellcmdflag, 'bash-language-server start']},
+          \ 'whitelist': ['sh'],
+          \ })
+  augroup END
+endif
+
+if executable('clojure-lsp')
+  augroup LspClojure
+    autocmd!
+    au User lsp_setup call lsp#register_server({
+          \ 'name': 'clojure-lsp',
+          \ 'cmd': {server_info->['clojure-lsp']},
+          \ 'whitelist': ['clojure'],
+          \ })
+  augroup END
+endif
+
+" check: 動かない?
+if executable('vscode-json-languageserver')
+  augroup LspJson
+    autocmd!
+    au User lsp_setup call lsp#register_server({
+          \ 'name': 'vscode-json-languageserver',
+          \ 'cmd': {server_info->['vscode-json-languageserver', '--stdio']},
+          \ 'whitelist': ['json', 'jsonc'],
+          \ })
+  augroup END
+endif
+
